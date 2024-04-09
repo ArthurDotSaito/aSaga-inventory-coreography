@@ -1,12 +1,14 @@
 package com.saito.inventory.application.core.domain;
 
+import com.saito.inventory.application.core.domain.enums.SaleStatus;
+
 import java.math.BigDecimal;
 
 public class Sale {
 
     public Sale() {}
 
-    public Sale(Integer id, Integer productId, Integer userId, BigDecimal value, SaleStaus status, Integer quantity) {
+    public Sale(Integer id, Integer productId, Integer userId, BigDecimal value, SaleStatus status, Integer quantity) {
         this.id = id;
         this.productId = productId;
         this.userId = userId;
@@ -19,8 +21,7 @@ public class Sale {
     private Integer productId;
     private Integer userId;
     private BigDecimal value;
-
-    private SaleStaus status;
+    private SaleStatus status;
     private Integer quantity;
 
     public Integer getId() {
@@ -55,11 +56,11 @@ public class Sale {
         this.value = value;
     }
 
-    public SaleStaus getStatus() {
+    public SaleStatus getStatus() {
         return status;
     }
 
-    public void setStatus(SaleStaus status) {
+    public void setStatus(SaleStatus status) {
         this.status = status;
     }
 
