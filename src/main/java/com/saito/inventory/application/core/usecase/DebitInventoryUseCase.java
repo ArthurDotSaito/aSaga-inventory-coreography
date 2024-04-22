@@ -6,7 +6,9 @@ import com.saito.inventory.application.ports.in.DebitInventoryInputPort;
 import com.saito.inventory.application.ports.in.FindInventoryByProductIdInputPort;
 import com.saito.inventory.application.ports.out.SendToKafkaOutPutPort;
 import com.saito.inventory.application.ports.out.UpdateInventoryOutputPort;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class DebitInventoryUseCase implements DebitInventoryInputPort {
 
     private final FindInventoryByProductIdInputPort findInventoryByProductIdInputPort;
@@ -26,13 +28,18 @@ public class DebitInventoryUseCase implements DebitInventoryInputPort {
 
     @Override
     public void debit(Sale aSale){
-        var inventory = findInventoryByProductIdInputPort.find(aSale.getProductId());
-        if(inventory.getQuantity() < aSale.getQuantity()){
-            throw new RuntimeException("Insuficient Invetory to this sale.");
+        try {
+            var inventory = findInventoryByProductIdInputPort.find(aSale.getProductId());
+            if(inventory.getQuantity() < aSale.getQuantity()){
+                throw new RuntimeException("Insuficient Invetory to this sale.");
+            }
+            inventory.debitQuantity(aSale.getQuantity());
+            updateInventoryOutputPort.update(inventory);
+            sendToKafkaOutPutPort.send(aSale, SaleEvent.UPDATED_INVENTORY);
+        }catch (Exception e){
+            log.error("Error = {}", e.getMessage());
+            sendToKafkaOutPutPort.send(aSale, SaleEvent.ROLLBACK_INVENTORY);
         }
-        inventory.debitQuantity(aSale.getQuantity());
-        updateInventoryOutputPort.update(inventory);
-        sendToKafkaOutPutPort.send(aSale, SaleEvent.UPDATED_INVENTORY);
     }
 
 }
